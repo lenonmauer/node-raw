@@ -9,24 +9,15 @@ class HttpServer {
     this._middlewares = [];
   }
 
-  start() {
+  start(callback) {
     this._server = http.createServer();
-    this._bindEvents();
-    console.log('start');
-  }
-
-  _bindEvents() {
     this._server.on('request', this._onRequest.bind(this));
-    this._server.listen(this._config.PORT, this._onListening.bind(this));
+    this._server.listen(this._config.PORT, callback.bind(this));
   }
 
   _onRequest(req, res) {
     console.log(req.method + ' - ' + req.url);
     requestHandler.handle(this._middlewares, req, res);
-  }
-
-  _onListening() {
-    console.log(`Listening at ${this._config.PORT}`);
   }
 
   useMiddleware(middleware) {

@@ -1,5 +1,5 @@
-class FinalMiddleware {
-  get = () => (req, res, next) => {
+class ExceptionHandlerMiddleware {
+  handle = () => (req, res, next) => {
     if (res.statusCode < 400) {
       res.status(500);
     }
@@ -13,4 +13,4 @@ class FinalMiddleware {
   };
 }
 
-module.exports = new FinalMiddleware();
+module.exports = new ExceptionHandlerMiddleware();

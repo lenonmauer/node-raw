@@ -30,7 +30,7 @@ class Router {
   }
 
   getMiddleware() {
-    return routerMiddleware.get(this._routes);
+    return routerMiddleware.handle(this._routes);
   }
 }
 

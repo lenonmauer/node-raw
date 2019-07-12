@@ -1,13 +1,17 @@
+const MiddlewareHandler = require('./middleware-handler');
+const responseMiddleware = require('./middlewares/response');
+const queryMiddleware = require('./middlewares/query');
+const finalMiddleware = require('./middlewares/final');
+
 class RequestHandler {
-  constructor(router) {
-    this.router = router;
-  }
+  handle(middlewares, req, res) {
+    const handler = new MiddlewareHandler();
 
-  handle(req, res) {
-    res.end('ok');
+    handler.use(responseMiddleware.get());
+    handler.use(queryMiddleware.get());
+    middlewares.forEach((middleware) => handler.use(middleware));
+    handler.run(req, res, finalMiddleware.get());
   }
-
-  parseQueryString() {}
 }
 
-module.exports = (router) => new RequestHandler(router);
+module.exports = new RequestHandler();

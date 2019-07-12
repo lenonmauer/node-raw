@@ -1,32 +1,45 @@
 const http = require('http');
 const requestHandler = require('./request-handler');
+const Router = new require('./router');
 
 class HttpServer {
   constructor(config) {
-    this.config = config;
+    this._config = config;
+    this._server = null;
+    this._middlewares = [];
   }
 
   start() {
-    this.server = http.createServer();
-    this.bindEvents();
+    this._server = http.createServer();
+    this._bindEvents();
+    console.log('start');
   }
 
-  bindEvents() {
-    this.server.on('request', this.onRequest.bind(this));
-    this.server.listen(this.config.PORT, this.onListening.bind(this));
+  _bindEvents() {
+    this._server.on('request', this._onRequest.bind(this));
+    this._server.listen(this._config.PORT, this._onListening.bind(this));
   }
 
-  onRequest(req, res) {
-    requestHandler(this.router).handle(req, res);
+  _onRequest(req, res) {
+    console.log(req.method + ' - ' + req.url);
+    requestHandler.handle(this._middlewares, req, res);
   }
 
-  onListening() {
-    console.log(`Listening at ${this.config.PORT}`);
+  _onListening() {
+    console.log(`Listening at ${this._config.PORT}`);
   }
 
-  setRouter(router) {
-    this.router = router;
+  useMiddleware(middleware) {
+    this._middlewares.push(middleware);
+    return this;
+  }
 
+  useRouter(router) {
+    if (router instanceof Router === false) {
+      throw new Error('router must be instance of core/router');
+    }
+
+    this.useMiddleware(router.getMiddleware());
     return this;
   }
 }

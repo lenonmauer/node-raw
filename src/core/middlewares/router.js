@@ -13,7 +13,7 @@ class RouterMiddleware {
 
       routeFound = true;
 
-      this._runHandlers(req, res, route.handlers);
+      this._runHandlers(req, res, next, route.handlers);
     }
 
     if (!routeFound) {
@@ -49,14 +49,14 @@ class RouterMiddleware {
     return result;
   }
 
-  _runHandlers(req, res, handlers) {
+  _runHandlers(req, res, next, handlers) {
     const middlewareHandler = new MiddlewareHandler();
 
     for (let handler of handlers) {
       middlewareHandler.use(handler);
     }
 
-    middlewareHandler.run(req, res, () => {});
+    middlewareHandler.run(req, res, next);
   }
 }
 

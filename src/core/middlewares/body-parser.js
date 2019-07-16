@@ -1,6 +1,13 @@
+const BadRequestError = require('../errors/bad-request');
+
 class BodyParserMiddleware {
-  _text = () => (req, res, next) => {
+  text = () => (req, res, next) => {
     let body = '';
+    const { method } = req;
+
+    if (method === 'GET') {
+      return next();
+    }
 
     req.on('data', (data) => {
       body += data;
@@ -13,21 +20,20 @@ class BodyParserMiddleware {
   };
 
   json = () => (req, res, next) => {
-    const contentType = req.headers['content-type'];
+    const contentType = req.headers['content-type'] || '';
+    const { method } = req;
 
-    if (!contentType || !contentType.includes('application/json')) {
+    if (!contentType.includes('application/json') || method === 'GET') {
       return next();
     }
 
-    this._text(req, res, () => {
-      try {
-        req.body = JSON.parse(req.body);
-      } catch (err) {
-        req.body = null;
-      }
+    try {
+      req.body = JSON.parse(req.body);
+    } catch (err) {
+      return next(new BadRequestError('Invalid JSON body'));
+    }
 
-      next();
-    });
+    next();
   };
 }
 

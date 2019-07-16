@@ -1,32 +1,42 @@
 class MiddlewareHandler {
   constructor() {
-    if (!Array.prototype.last) {
-      Array.prototype.last = function() {
-        return this[this.length - 1];
-      };
-    }
-
-    if (!Array.prototype.reduceOneRight) {
-      Array.prototype.reduceOneRight = function() {
-        return this.slice(0, -1);
-      };
-    }
+    this.middlewares = [];
+    this.exceptionHandler = null;
   }
 
   use(fn) {
-    this.run = ((stack) => (...args) =>
-      stack(...args.reduceOneRight(), () => {
-        let _next = args.last();
-        fn.apply(this, [
-          ...args.reduceOneRight(),
-          _next.bind.apply(_next, [null, ...args.reduceOneRight()]),
-        ]);
-      }))(this.run);
+    this.middlewares.push(fn);
+  }
+
+  useExceptionHandler(fn) {
+    this.exceptionHandler = fn;
   }
 
   run(...args) {
-    const next = args.last();
-    next.apply(this, args.reduceOneRight());
+    const middlewares = [...this.middlewares, this.exceptionHandler];
+    const middlewaresLength = middlewares.length;
+    let iterator = 0;
+
+    if (middlewaresLength === 0) {
+      return;
+    }
+
+    const firstMiddleware = middlewares[0];
+
+    const next = (error = null) => {
+      iterator += 1;
+
+      if (error) {
+        return this.exceptionHandler(error, ...args);
+      }
+
+      if (iterator < middlewaresLength) {
+        const nextMiddleware = middlewares[iterator];
+        nextMiddleware(...args, next);
+      }
+    };
+
+    firstMiddleware(...args, next);
   }
 }
 

@@ -1,28 +1,26 @@
 const routerMiddleware = require('./middlewares/router');
 
 class Router {
-  constructor() {
-    this._routes = [];
-  }
+  #routes = [];
 
   get(url, ...handlers) {
-    this._pushRoute('GET', url, handlers);
+    this.#pushRoute('GET', url, handlers);
   }
 
   post(url, ...handlers) {
-    this._pushRoute('POST', url, handlers);
+    this.#pushRoute('POST', url, handlers);
   }
 
   put(url, ...handlers) {
-    this._pushRoute('PUT', url, handlers);
+    this.#pushRoute('PUT', url, handlers);
   }
 
   delete(url, ...handlers) {
-    this._pushRoute('DELETE', url, handlers);
+    this.#pushRoute('DELETE', url, handlers);
   }
 
-  _pushRoute(method, url, handlers) {
-    this._routes.push({
+  #pushRoute = (method, url, handlers) => {
+    this.#routes.push({
       method,
       url,
       handlers,
@@ -30,7 +28,7 @@ class Router {
   }
 
   getMiddleware() {
-    return routerMiddleware.handle(this._routes);
+    return routerMiddleware.handle(this.#routes);
   }
 }
 

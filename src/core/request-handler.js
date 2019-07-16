@@ -1,18 +1,26 @@
 const MiddlewareHandler = require('./middleware-handler');
+const exceptionHandlerMiddleware = require('./middlewares/exception-handler');
 const responseMiddleware = require('./middlewares/response');
 const queryMiddleware = require('./middlewares/query');
-const exceptionHandlerMiddleware = require('./middlewares/exception-handler');
+const bodyParser = require('./middlewares/body-parser');
 
 class RequestHandler {
-  handle(middlewares, req, res) {
-    const middlewareHandler = new MiddlewareHandler();
+  middlewareHandler = new MiddlewareHandler();
 
-    middlewareHandler.use(responseMiddleware.get());
-    middlewareHandler.use(queryMiddleware.get());
-    middlewares.forEach((middleware) => middlewareHandler.use(middleware));
+  constructor() {
+    this.#addDefaultMiddlewares();
+  }
 
-    middlewareHandler.run(req, res, exceptionHandlerMiddleware.handle());
+  #addDefaultMiddlewares = () => {
+    this.middlewareHandler.use(responseMiddleware());
+    this.middlewareHandler.use(queryMiddleware());
+    this.middlewareHandler.use(bodyParser.text());
+    this.middlewareHandler.useExceptionHandler(exceptionHandlerMiddleware());
   }
 }
 
-module.exports = new RequestHandler();
+const requestHandler = new Proxy(new RequestHandler(), {
+  get: (obj, prop) => (prop in obj ? obj[prop] : obj.middlewareHandler[prop]),
+});
+
+module.exports = requestHandler;

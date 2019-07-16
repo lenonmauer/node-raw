@@ -4,8 +4,11 @@ class IndexController {
   }
 
   zueira(req, res) {
-    console.log(req.params, req.query);
     res.status(200).json('zueira');
+  }
+
+  post(req, res) {
+    res.json(req.body);
   }
 }
 

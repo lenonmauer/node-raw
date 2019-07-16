@@ -1,10 +1,12 @@
 {
+  "parser": "babel-eslint",
   "env": {
     "node": true,
     "commonjs": true,
-    "es6": true
+    "es6": true,
+    "jest": true
   },
-  "extends": "eslint:recommended",
+  "extends": ["airbnb-base"],
   "globals": {
     "Atomics": "readonly",
     "SharedArrayBuffer": "readonly"
@@ -13,9 +15,10 @@
     "ecmaVersion": 2018
   },
   "rules": {
-    "indent": ["error", 2],
-    "linebreak-style": ["error", "unix"],
-    "quotes": ["error", "single"],
-    "semi": ["error", "always"]
+    "class-methods-use-this": "off",
+    "arrow-parens": [2, "always"],
+    "no-console": "off",
+    "prefer-arrow-callback": "off",
+    "consistent-return": "off"
   }
 }

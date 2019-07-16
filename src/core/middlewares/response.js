@@ -1,16 +1,12 @@
-class ResponseMiddleware {
-  get = () => (req, res, next) => {
-    res.status = function(status) {
-      res.statusCode = status;
-      return this;
-    };
-
-    res.json = function(data) {
-      res.end(JSON.stringify(data));
-    };
-
-    next();
+module.exports = () => (req, res, next) => {
+  res.status = function (status) {
+    res.statusCode = status;
+    return this;
   };
-}
 
-module.exports = new ResponseMiddleware();
+  res.json = function (data) {
+    res.end(JSON.stringify(data));
+  };
+
+  next();
+};

@@ -1,16 +1,7 @@
-class ExceptionHandlerMiddleware {
-  handle = () => (req, res, next) => {
-    if (res.statusCode < 400) {
-      res.status(500);
-    }
+module.exports = () => (err, req, res) => {
+  console.log(err);
+  const status = err.status || 500;
+  const message = err.message || '500 - Internal Server Error';
 
-    switch (res.statusCode) {
-      case 404:
-        res.json({ error: '404 - Not Found' });
-      case 500:
-        res.json({ error: '500 - Internal Server Error' });
-    }
-  };
-}
-
-module.exports = new ExceptionHandlerMiddleware();
+  res.status(status).json({ error: message });
+};

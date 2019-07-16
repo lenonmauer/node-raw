@@ -1,20 +1,19 @@
-const MiddlewareHandler = require('../middleware-handler');
 const url = require('url');
+const MiddlewareHandler = require('../middleware-handler');
 
 class RouterMiddleware {
   handle = (routes) => (req, res, next) => {
-    const { url, method } = req;
     let routeFound = false;
 
-    for (let route of routes) {
-      if (!this._matchRoute(route, req)) {
-        continue;
+    routes.forEach((route) => {
+      if (!this.#matchRoute(route, req)) {
+        return;
       }
 
       routeFound = true;
 
-      this._runHandlers(req, res, next, route.handlers);
-    }
+      this.#runHandlers(req, res, next, route.handlers);
+    });
 
     if (!routeFound) {
       res.status(404);
@@ -22,10 +21,11 @@ class RouterMiddleware {
     }
   };
 
-  _matchRoute(route, req) {
+  #matchRoute = (route, req) => {
     const urlWithoutQuery = url.parse(req.url).pathname;
-    const urlParts = urlWithoutQuery.split('/');
     const routeParts = route.url.split('/');
+    const urlParts = urlWithoutQuery.split('/')
+      .filter((part) => part.length > 0);
 
     if (urlParts.length !== routeParts.length || req.method !== route.method) {
       return false;
@@ -36,12 +36,12 @@ class RouterMiddleware {
       return isParam || routePart === urlParts[index];
     });
 
-    const reqParams = routeParts.reduce((result, part, index) => {
+    const reqParams = routeParts.reduce((res, part, index) => {
       if (part.match(/:[a-z]+/)) {
-        result[part.substr(1)] = urlParts[index];
+        res[part.substr(1)] = urlParts[index];
       }
 
-      return result;
+      return res;
     }, {});
 
     req.params = reqParams;
@@ -49,12 +49,10 @@ class RouterMiddleware {
     return result;
   }
 
-  _runHandlers(req, res, next, handlers) {
+  #runHandlers = (req, res, next, handlers) => {
     const middlewareHandler = new MiddlewareHandler();
 
-    for (let handler of handlers) {
-      middlewareHandler.use(handler);
-    }
+    handlers.forEach((handler) => middlewareHandler.use(handler));
 
     middlewareHandler.run(req, res, next);
   }

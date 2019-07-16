@@ -1,47 +1,26 @@
 const path = require('path');
 const fs = require('fs');
 const mime = require('mime-types');
-const recursive = require('recursive-readdir');
 
 class StaticFilesMiddleware {
-  serve = (dir) => {
-    const filesCached = [];
+  serve = (dir) => (req, res, next) => {
+    if (req.method !== 'GET' && req.method !== 'HEAD') {
+      return next();
+    }
 
-    recursive(dir, function(err, files) {
-      files.forEach((file) => {
-        const filename = path.basename(file);
+    const { url } = req;
+    const filepath = path.join(dir, url);
+    const filename = path.basename(filepath);
 
-        fs.stat(file, (err, stats) => {
-          if (err) return;
-
-          filesCached.push({
-            size: stats.size,
-            name: filename,
-            path: file,
-            type: mime.lookup(filename),
-          });
-        });
-      });
-    });
-
-    return (req, res, next) => {
-      if (req.method !== 'GET' && req.method !== 'HEAD') {
+    fs.stat(filepath, (err, stats) => {
+      if (err || stats.isDirectory()) {
         return next();
       }
 
-      const url = req.url;
-      const filepath = path.join(dir, url);
-      const fileMatched = filesCached.find((fileCached) => fileCached.path === filepath);
-
-      if (!fileMatched) {
-        return next();
-      }
-
-      res.setHeader('Content-type', mime.contentType(fileMatched.type));
-      res.setHeader('Content-length', fileMatched.size);
-
+      res.setHeader('Content-type', mime.contentType(filename));
+      res.setHeader('Content-length', stats.size);
       fs.createReadStream(filepath).pipe(res);
-    };
+    });
   };
 }
 
